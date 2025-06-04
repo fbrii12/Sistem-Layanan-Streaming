@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pertemuan5;
+package layananstreaming;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,22 +30,21 @@ public class GUI_Content extends javax.swing.JFrame {
         initComponents();
         tampil();
     }
-
-    public void batal() {
-        txtDaftar.setText("");
-        txtHarga.setText("");
-        txtPlatform.setText("");
-    }
-    public Connection conn;
-
-    public void koneksi() throws SQLException {
+        public void batal()
+        {
+            txtDaftar.setText("");
+            txtHarga.setText("");
+            txtPlatform.setText("");
+        }
+        public Connection conn;
+        public void koneksi() throws SQLException {
         try {
             conn = null;
             Class.forName("com.mysql.jdbc.Driver"); // <- versi untuk Connector/J 5.1.49
             conn = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/layanan_streaming?useUnicode=true&characterEncoding=UTF-8",
-                    "root",
-                    ""
+                "jdbc:mysql://localhost:3306/layanan_streaming?useUnicode=true&characterEncoding=UTF-8",
+                "root",
+                ""
             );
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(GUI_Content.class.getName()).log(Level.SEVERE, null, ex);
@@ -56,7 +55,7 @@ public class GUI_Content extends javax.swing.JFrame {
         }
     }
 
-    public void tampil() {
+        public void tampil() {
         DefaultTableModel tabelhead = new DefaultTableModel();
         tabelhead.addColumn("Nama Platform");
         tabelhead.addColumn("Daftar Konten");
@@ -215,19 +214,32 @@ public class GUI_Content extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnProsesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProsesActionPerformed
-        String platform = txtPlatform.getText();
-        String daftarKonten = txtDaftar.getText();
-        int harga = Integer.parseInt(txtHarga.getText());
+            try {
+            String platform = txtPlatform.getText();
+            String daftarKonten = txtDaftar.getText();
+            int harga = Integer.parseInt(txtHarga.getText());
 
-        Content konten = new Content(platform, daftarKonten, harga);
+            koneksi();
+            String sql = "INSERT INTO konten (nama_platform, daftar_konten, harga_langganan) VALUES (?, ?, ?)";
+            java.sql.PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, platform);
+            pst.setString(2, daftarKonten);
+            pst.setInt(3, harga);
+            pst.executeUpdate();
 
-        DefaultTableModel model = (DefaultTableModel) jTabel.getModel();
-        model.addRow(new Object[]{platform,
-            daftarKonten, "Rp " + harga
-        });
+            JOptionPane.showMessageDialog(this, "Data berhasil disimpan");
+            batal();
+            tampil();
 
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error SQL: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Harga harus berupa angka!", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Terjadi kesalahan: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }//GEN-LAST:event_btnProsesActionPerformed
-    
+
     private void btnBatalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBatalActionPerformed
         // TODO add your handling code here:
         batal();
@@ -235,7 +247,7 @@ public class GUI_Content extends javax.swing.JFrame {
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
         // TODO add your handling code here:
-        try {
+            try {
             if (selectedPlatform == null) {
                 JOptionPane.showMessageDialog(this, "Pilih data yang ingin dihapus dari tabel!");
                 return;
